@@ -26,10 +26,17 @@ def parse_endless_sky( data ):
             """ Uh oh """
             assert False            
     return entities
-
+# must match
+# "whatever cool" "huh"
+# whatever "cool huh"
+# whatever `whdauy cool`
+# object
 property_re = r'\t*("[^"]*"|[^"\s]*)\s("[^"]*"|`[^`]*`|[^" ]*)'
-
+object_re   = r'^\t*object\s*$'
 def parse_tuple(line):
+    m1 = re.match(object_re, line)
+    if m1:
+        return ('object',None)
     m = re.match( property_re , line )
     if not m:
         """ Couldn't parse """
@@ -49,16 +56,17 @@ def count_init_tabs(s):
 
 def parse_entity(line,lines,depth=0):
     ek, ev = parse_tuple(line)
-    lines = lines[1:]
     tabs = "\t"*(depth+1)
     entity = [(ek,ev)]
     while( len(lines) > 0 ):
         c = count_init_tabs(lines[0])
         if c == depth+2:
             sentity, rlines = parse_entity(line,lines,depth=depth+1)
-            entity[-1] = sentity # replace the old one
-            lines = rlines
-            line = None
+            entity.pop()
+            entity.append(sentity)
+            # entity[-1] = sentity # replace the old one
+            line = rlines[0]
+            lines = rlines[1:]
         elif c == depth+1:
             """ parse a property """
             sentity = parse_tuple(lines[0])
@@ -112,7 +120,40 @@ def endless_replace(entity, prop, val):
 def endless_first(entity, stype):
     return endless_type_grep(entity, stype)[0]
 
+def layout_property(entity, indentation):
+    if entity[1] is None:
+        return indentation+entity[0]
+    else:
+        try:
+            return indentation+entity[0]+" "+str(entity[1])
+        except Exception as e:
+            print(entity)
+            print(e)
+            assert False
+
+def layout_entities(entities,depth=0):
+    indentation = "\t"*(depth+1)
+    eindentation = "\t"*(depth)
+    out = layout_property(entities[0], eindentation) + "\n"
+    for entity in entities[1:]:
+        if isinstance(entity,list):
+            out += layout_property(entity[0], indentation) + "\n"
+            out += layout_entities(entity[1:], depth=depth+1) + "\n"
+        else:
+            out += layout_property(entity, indentation) + "\n"
+    return out
+
+def serialize_entities(entities):
+    return "\n".join([layout_entities(x) for x in entities])
+
 def test_driver():
+    testd = "object\n" \
+            "\tsprite star/g5\n" \
+            "\tperiod 10\n"
+    
+    objs = parse_endless_sky(testd)
+    d = objs[0]
+    assert d[0] == ('object',None)
     maps = parse_endless_sky_file("data.orig/map.txt")
     planets = endless_type_grep(maps, "planet")
     assert(len(planets) > 0)
@@ -124,6 +165,9 @@ def test_driver():
     earth = endless_replace( earth, "bribe", 0.1)
     bribe = endless_first(earth, "bribe")
     assert bribe[1] == 0.1
-
+    testd2 = serialize_entities(objs)
+    assert testd == testd2
+    print(serialize_entities(maps))
+    
 if __name__ == "__main__":
     test_driver()
