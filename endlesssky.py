@@ -146,6 +146,53 @@ def layout_entities(entities,depth=0):
 def serialize_entities(entities):
     return "\n".join([layout_entities(x) for x in entities])
 
+
+rutilicus = '''
+system Rutilicus
+	pos -535 273
+	government Republic
+	habitable 625
+	belt 1771
+	link Arcturus
+	link Cebalrai
+	link Menkent
+	link Holeb
+	asteroids "small rock" 1 1.9188
+	asteroids "medium rock" 10 1.9656
+	asteroids "large rock" 1 2.0358
+	asteroids "small metal" 13 1.4742
+	asteroids "medium metal" 50 1.2168
+	asteroids "large metal" 1 2.2932
+	minables copper 7 2.11726
+	minables lead 14 2.22127
+	minables titanium 9 1.47159
+	trade Clothing 224
+	trade Electronics 838
+	trade Equipment 560
+	trade Food 335
+	trade "Heavy Metals" 916
+	trade Industrial 792
+	trade "Luxury Goods" 1171
+	trade Medical 590
+	trade Metal 468
+	trade Plastic 415
+	fleet "Small Southern Merchants" 600
+	fleet "Large Southern Merchants" 2000
+	fleet "Small Militia" 6000
+	fleet "Human Miners" 3000
+	object
+		sprite star/g5
+		period 10
+	object
+		sprite planet/rock6
+		distance 158.61
+		period 31.9607
+	object "New Boston"
+		sprite planet/cloud6
+		distance 513.86
+		period 186.375
+
+'''
 def test_driver():
     testd = "object\n" \
             "\tsprite star/g5\n" \
@@ -154,6 +201,13 @@ def test_driver():
     objs = parse_endless_sky(testd)
     d = objs[0]
     assert d[0] == ('object',None)
+    rut = parse_endless_sky(rutilicus)[0]
+    robjs = endless_type_grep(rut,"object")
+    o = endless_first(rut, "object")
+    print(o)
+    assert o[0][0] == 'object'
+    assert o[0][1] is None
+    
     maps = parse_endless_sky_file("data.orig/map.txt")
     planets = endless_type_grep(maps, "planet")
     assert(len(planets) > 0)
@@ -167,7 +221,7 @@ def test_driver():
     assert bribe[1] == 0.1
     testd2 = serialize_entities(objs)
     assert testd == testd2
-    print(serialize_entities(maps))
+    # print(serialize_entities(maps))
     
 if __name__ == "__main__":
     test_driver()
