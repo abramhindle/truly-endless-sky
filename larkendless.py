@@ -88,6 +88,82 @@ def parser( text ):
     transformed = TreeToEndless().transform( tree )
     return transformed
 
+def get_name(x):
+    if isinstance(x,list):
+        return x[0][0]
+    else:
+        return x[0]
+
+def get_value(x):
+    if isinstance(x,list):
+        return x[0][1]
+    else:
+        return x[1]
+def get_properties(x):
+    if isinstance(x,list):
+        return x[1:]
+    return None
+
+def mk_val(entity, val):
+    if isinstance(entity,list):
+        entity[0][1] = val
+        return entity
+    else:
+        return (entity[0], val)
+    
+def endless_type_grep(entities, stype):
+    return [x for x in entities if get_name(x) == stype]
+
+def endless_name_grep(entities, name):
+    return [x for x in entities if get_value(x) == name]
+
+def endless_has(entity, entry):
+    return len(endless_type_grep(entity, entry)) > 0
+
+def endless_replace(entity, prop, val):
+    """ mutates! """
+    for i in range(0,len(entity)):
+        if get_name(entity[i]) == prop:
+            entity[i] = mk_val(entity[i], val)
+            break
+    return entity
+
+def endless_first(entity, stype):
+    return endless_type_grep(entity, stype)[0]
+
+def layout_property(entity):
+    if len(entity) == 1 or entity[1] is None:
+        return entity[0]
+    else:
+        try:
+            return entity[0]+" "+" ".join([str(x) for x in entity[1:]])
+        except Exception as e:
+            print(entity)
+            print(e)
+            assert False
+
+            
+def indent(lines):
+    return ["\t" + line for line in lines]
+
+def flatten(l_o_l):
+    return [item for sublist in l_o_l for item in sublist]
+
+def layout_entities(entities):
+    ''' only returns lists of strings '''
+    if isinstance(entities, list):
+        return [ layout_property(entities[0]) ] + indent(flatten([layout_entities(entity) for entity in entities[1:]]))
+    else:
+        return [ layout_property(entities) ]
+
+def serialize_entities(entities):
+    return "\n".join(layout_entities(entities))
+
+def parse_endless_sky_file( filename ):
+    return parser( open( filename ).read() )
+
+
+
 rutilicus = '''
 system Rutilicus
 	pos -535 273
@@ -134,7 +210,6 @@ system Rutilicus
 		period 186.375
 '''
 
-
 def test_driver():
     testd = "# yo how's it going\n\n" \
             "object\n__INDENT__" \
@@ -174,16 +249,33 @@ def test_driver():
     
     testd = "object\n" \
             "\tsprite star/g5\n" \
-            "\tperiod 10\n"    
+            "\tperiod 10.0\n"    
     objs = parser(testd)
     #d = objs[0]
     #assert d[0] == ('object',None)
-    rut = parser( rutilicus )[0]
+    rut = parser( rutilicus )
+    assert rut[0] == ('system', 'Rutilicus')
     robjs = endless_type_grep(rut,"object")
+    assert len(robjs) == 3
     o = endless_first(rut, "object")
-    print(o)
     assert o[0][0] == 'object'
     assert o[0][1] is None
+    maps = parse_endless_sky_file("data.orig/map.txt")
+    planets = endless_type_grep(maps, "planet")
+    assert(len(planets) > 0)
+    earth = endless_name_grep(planets, "Earth")[0]
+    assert(endless_has(earth, "landscape"))
+    assert(endless_has(earth, "description"))
+    assert(endless_has(earth, "bribe"))
+    assert(endless_has(earth, 'required reputation'))
+    earth = endless_replace( earth, "bribe", 0.1)
+    bribe = endless_first(earth, "bribe")
+    assert bribe[1] == 0.1
+
+    objs = parser(testd)
+    testd2 = serialize_entities(objs)
+    assert testd.strip() == testd2.strip()
+    # print(serialize_entities(maps))
 
     
 if __name__ == "__main__":
