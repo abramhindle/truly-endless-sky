@@ -115,6 +115,8 @@ def mk_val(entity, val):
         entity[0][1] = val
         return entity
     else:
+        if isinstance(val,tuple):
+            return (entity[0], *val)
         return (entity[0], val)
     
 def endless_type_grep(entities, stype):
@@ -137,12 +139,37 @@ def endless_replace(entity, prop, val):
 def endless_first(entity, stype):
     return endless_type_grep(entity, stype)[0]
 
+def endless_replace_entity(entities, entity_tuple, replacement_entity):
+    for i in range(0, len(entities)):
+        entity = entities[i]
+        if isinstance(entity, list):
+            if entity[0] == entity_tuple:
+                entities[i] = replacement_entity
+                return
+    raise Exception("Could not find %s" % entity_tuple)
+
+def layout_value(val):
+    if val is None:
+        return ''
+    if isinstance(val,str):
+        if '"' in val:
+            return '`' + val + '`'
+        elif ' ' in val:
+            return '"' + val + '"'
+        elif len(val) == 0:
+            return '""'
+        else:
+            return val
+    else:
+        return layout_value( str(val) )
+            
+
 def layout_property(entity):
     if len(entity) == 1 or entity[1] is None:
-        return entity[0]
+        return layout_value(entity[0])
     else:
         try:
-            return entity[0]+" "+" ".join([str(x) for x in entity[1:]])
+            return layout_value(entity[0])+" "+" ".join([layout_value(x) for x in entity[1:]])
         except Exception as e:
             print(entity)
             print(e)
@@ -158,11 +185,15 @@ def flatten(l_o_l):
 def layout_entities(entities):
     ''' only returns lists of strings '''
     if isinstance(entities, list):
+        if len(entities) > 0 and isinstance(entities[0],list):
+            assert "Inner List?"
         return [ layout_property(entities[0]) ] + indent(flatten([layout_entities(entity) for entity in entities[1:]]))
     else:
         return [ layout_property(entities) ]
 
 def serialize_entities(entities):
+    if (isinstance(entities, list) and len(entities) > 0 and isinstance(entities[0],list)):
+        return "\n".join(["\n".join(layout_entities(entity)) for entity in entities])
     return "\n".join(layout_entities(entities))
 
 def parse_endless_sky_file( filename ):
@@ -214,6 +245,17 @@ system Rutilicus
 		sprite planet/cloud6
 		distance 513.86
 		period 186.375
+'''
+
+alubs = '''
+planet "Ablub's Invention"
+	attributes arach factory
+	landscape land/sky3
+	description `This ancient and quiet world, orbiting a dim red sun, is home to the microchip foundries of House Idriss, the Arach guild that specializes in computers and advanced electronics. Outside of the cities, which are clustered around the equator, Ablub's Invention is uninhabited except by the native lifeforms, including strange, spindly-legged quadrupeds, awkward birds with leathery wings, and amphibians with webbed feet and long, whiskered snouts.`
+	spaceport `The day-night cycle here is at least three times as long as any of the Coalition's species are habituated to, so the entire city enters a "false nighttime" in the middle of the day, shuttering all the windows so that the locals can rest and reset their biological clocks. And in the middle of the night, the city is brightly lit for a "false day."`
+	spaceport `	The local work schedule has adapted to this unusual cycle, with the two true daytime periods serving the equivalent of the human work week, and the false daytime treated as a weekend, a time for socializing or working at home.`
+	outfitter "Coalition Advanced"
+	"required reputation" 25
 '''
 
 def test_driver():
@@ -289,7 +331,22 @@ def test_driver():
     testd2 = serialize_entities(objs)
     assert testd.strip() == testd2.strip()
     # print(serialize_entities(maps))
-
+    assert layout_property(('pos', 0, 0)) == 'pos 0 0'
+    galaxy = [('galaxy', 'Milky Way'), ('pos', 0, 0), ('sprite', 'ui/galaxy')]
+    oot = "galaxy \"Milky Way\"\n\tpos 0 0\n\tsprite ui/galaxy"
+    print(serialize_entities(galaxy))
+    assert serialize_entities(galaxy) == oot
+    coolplace = [('cool place','fun town'), ('description','""""')]
+    coot = '"cool place" "fun town"\n\tdescription `""""`'
+    assert serialize_entities(coolplace) == coot
+    assert '`' in serialize_entities(coolplace)
+    alubs_parse = parser(alubs)
+    sp = endless_first(alubs_parse, "spaceport")
+    assert '"' in sp[1]
+    x = layout_value(sp[1])
+    assert '`' in x
+    alubs_out = serialize_entities(alubs_parse)
+    assert '`' in alubs_out
     
 if __name__ == "__main__":
     test_driver()
