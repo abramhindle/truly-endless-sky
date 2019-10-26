@@ -46,8 +46,10 @@ class TreeToEndless(Transformer):
         key = s[0]
         v = None
         if len(s) > 1:
-            v = s[1]
-        x = (key,v)
+            v = s[1:]
+            x = tuple(s)
+        else:            
+            x = (key,None)
         return x
     def object(self, o):
         return o
@@ -264,6 +266,9 @@ def test_driver():
     o = endless_first(rut, "object")
     assert o[0][0] == 'object'
     assert o[0][1] is None
+    rpos = endless_type_grep(rut, 'pos')[0]
+    assert rpos  == ('pos', -535, 273)
+
     maps = parse_endless_sky_file("data.orig/map.txt.original")
     planets = endless_type_grep(maps, "planet")
     assert(len(planets) > 0)
@@ -277,8 +282,8 @@ def test_driver():
     assert bribe[1] == 0.1
 
     rut2 = endless_name_grep(maps, "Rutilicus")[0]
-    print(rut)
-    print(rut2)
+    rpos2 = endless_type_grep(rut, 'pos')[0]
+    assert rpos == rpos2
     
     objs = parser(testd)
     testd2 = serialize_entities(objs)
