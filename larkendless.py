@@ -34,7 +34,11 @@ class TreeToEndless(Transformer):
         return s[1:-1]
     def number(self, n):
         (n,) = n
-        return float(n)
+        sn = str(n)
+        if '.' in sn or 'e' in sn or 'E' in sn:
+            return float(n)
+        else:
+            return int(n)
     def identifier(self, s):
         (t,) = s
         return str(t)
@@ -249,7 +253,7 @@ def test_driver():
     
     testd = "object\n" \
             "\tsprite star/g5\n" \
-            "\tperiod 10.0\n"    
+            "\tperiod 10\n"    
     objs = parser(testd)
     #d = objs[0]
     #assert d[0] == ('object',None)
@@ -260,7 +264,7 @@ def test_driver():
     o = endless_first(rut, "object")
     assert o[0][0] == 'object'
     assert o[0][1] is None
-    maps = parse_endless_sky_file("data.orig/map.txt")
+    maps = parse_endless_sky_file("data.orig/map.txt.original")
     planets = endless_type_grep(maps, "planet")
     assert(len(planets) > 0)
     earth = endless_name_grep(planets, "Earth")[0]
@@ -272,6 +276,10 @@ def test_driver():
     bribe = endless_first(earth, "bribe")
     assert bribe[1] == 0.1
 
+    rut2 = endless_name_grep(maps, "Rutilicus")[0]
+    print(rut)
+    print(rut2)
+    
     objs = parser(testd)
     testd2 = serialize_entities(objs)
     assert testd.strip() == testd2.strip()
