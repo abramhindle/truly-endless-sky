@@ -36,6 +36,7 @@ object_re   = r'^\t*object\s*$'
 def parse_tuple(line):
     m1 = re.match(object_re, line)
     if m1:
+        print("object found")
         return ('object',None)
     m = re.match( property_re , line )
     if not m:
@@ -61,6 +62,7 @@ def parse_entity(line,lines,depth=0):
     while( len(lines) > 0 ):
         c = count_init_tabs(lines[0])
         if c == depth+2:
+            print(c,line)
             sentity, rlines = parse_entity(line,lines,depth=depth+1)
             entity.pop()
             entity.append(sentity)
