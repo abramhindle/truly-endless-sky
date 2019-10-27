@@ -136,6 +136,9 @@ def endless_replace(entity, prop, val):
             break
     return entity
 
+def endless_delete_type(entity, prop):
+    return [x for x in entity if x[0] != prop]
+    
 def endless_first(entity, stype):
     return endless_type_grep(entity, stype)[0]
 
@@ -147,6 +150,10 @@ def endless_replace_entity(entities, entity_tuple, replacement_entity):
                 entities[i] = replacement_entity
                 return
     raise Exception("Could not find %s" % entity_tuple)
+
+def endless_add_property(entity, t):
+    entity.append(t)
+    return entity
 
 def layout_value(val):
     if val is None:
@@ -347,6 +354,10 @@ def test_driver():
     assert '`' in x
     alubs_out = serialize_entities(alubs_parse)
     assert '`' in alubs_out
+    delsys = [('system', 'Whatevs'),('link', 'coolbears'),('cool','awesome'),('link','what')]
+    delsys2 = endless_delete_type( delsys, 'link')
+    assert delsys2 != delsys
+    assert not endless_has(delsys2, "link")
     
 if __name__ == "__main__":
     test_driver()
