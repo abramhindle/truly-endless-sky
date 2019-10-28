@@ -14,8 +14,8 @@ endless_grammar = r"""
     _DEDENT: "__DEDENT__"
     ?name: IDENTIFIER -> identifier
          | string
-    tuple  : name value* _NEWLINE
-    object : tuple _INDENT [ [ object | tuple ]+ ] _DEDENT
+    tuple  : name value* _NEWLINE 
+    object : tuple _INDENT [ object | tuple | _NEWLINE ]*  _DEDENT
     string : ESCAPED_STRING | ESCAPED_STRING2
     ESCAPED_STRING2 : "`" _STRING_ESC_INNER "`"
     %import common._STRING_ESC_INNER
@@ -122,6 +122,12 @@ def mk_val(entity, val):
 def endless_type_grep(entities, stype):
     return [x for x in entities if get_name(x) == stype]
 
+def flatten(l_o_l):
+    return [item for sublist in l_o_l for item in sublist]
+
+def endless_recursive_type_grep(entities, stype):
+    return flatten([endless_recursive_type_grep(x,stype) for x in entities if isinstance(x,list)]) + [x for x in entities if get_name(x) == stype]
+
 def endless_name_grep(entities, name):
     return [x for x in entities if get_value(x) == name]
 
@@ -186,8 +192,6 @@ def layout_property(entity):
 def indent(lines):
     return ["\t" + line for line in lines]
 
-def flatten(l_o_l):
-    return [item for sublist in l_o_l for item in sublist]
 
 def layout_entities(entities):
     ''' only returns lists of strings '''
@@ -263,6 +267,21 @@ planet "Ablub's Invention"
 	spaceport `	The local work schedule has adapted to this unusual cycle, with the two true daytime periods serving the equivalent of the human work week, and the false daytime treated as a weekend, a time for socializing or working at home.`
 	outfitter "Coalition Advanced"
 	"required reputation" 25
+'''
+
+mission = '''
+mission "Intro [0]"
+	priority
+	name "Passenger to <planet>"
+	description "This old-timer captain offered to ride along with you to <destination>, and to give you some tips along the way."
+	landing
+	passengers 1
+	source "New Boston"
+	destination "New Greenland"
+	
+	on offer
+		log "Finally scraped together enough money for a down payment on a starship. The interest on the mortgage is exorbitant."
+
 '''
 
 def test_driver():
@@ -341,7 +360,6 @@ def test_driver():
     assert layout_property(('pos', 0, 0)) == 'pos 0 0'
     galaxy = [('galaxy', 'Milky Way'), ('pos', 0, 0), ('sprite', 'ui/galaxy')]
     oot = "galaxy \"Milky Way\"\n\tpos 0 0\n\tsprite ui/galaxy"
-    print(serialize_entities(galaxy))
     assert serialize_entities(galaxy) == oot
     coolplace = [('cool place','fun town'), ('description','""""')]
     coot = '"cool place" "fun town"\n\tdescription `""""`'
@@ -358,6 +376,9 @@ def test_driver():
     delsys2 = endless_delete_type( delsys, 'link')
     assert delsys2 != delsys
     assert not endless_has(delsys2, "link")
+    missions = parser(mission)
+    x = endless_first(missions, "source")[1]
+    assert x == "New Boston"
     
 if __name__ == "__main__":
     test_driver()
