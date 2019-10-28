@@ -114,6 +114,7 @@ def swap_node(G, node1, node2):
     nx.set_node_attributes(G, 'pos', pos)
 
 def shuffle_of(l):
+    """ don't modify l, copy and shuffle """
     ll = list(l)
     random.shuffle(ll)
     return ll
@@ -144,14 +145,13 @@ def keep_neighborhoods_similar():
             g,n = gn
             swap_systems( node, n )
             c2, _ = count_govt_neighbor( node )
-            if (c2 < count):
+            if (c2 <= count):
                 """ undo """
                 swap_systems( node, n )
 
+# keep neighborhoods pretty similar 
 for i in range(100):
     keep_neighborhoods_similar()
-
-
 
 
 
@@ -165,6 +165,7 @@ def remove_links(system):
 pos = nx.get_node_attributes(G, 'pos')
 node_to_system = dict([ (n,system_names_to_system[ node_to_system_names[n] ])  for n in node_to_system_names ])
 
+# now we make sure the systems link to who we configured
 for node in node_to_system:
     system = node_to_system[node]
     x = pos[node][0]
@@ -176,14 +177,16 @@ for node in node_to_system:
     for neighbor in G.neighbors(node):
         es.endless_add_property(system,('link', node_to_system[neighbor][0][1]))
     node_to_system[node] = system
-    
+
+# now we replace the systems in the map
 for k in node_to_system:
     system = node_to_system[k]
     es.endless_replace_entity(maps, system[0], system)
 
+# write
 out = es.serialize_entities(maps)
 open("maps.txt.out", 'w').write(out)
 
+# graph
 node_to_govt = dict([(n, system_names_to_governments[ node_to_system_names[ n ] ]) for n in node_to_system_names])
-
 graphit(G, govt=node_to_govt)
