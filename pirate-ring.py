@@ -47,8 +47,8 @@ def generate_inital_graph(n_systems, prob=0.076,p=0.4,n_rounds=4000):
     govts = []
     for n in G.nodes():
         govt[n] = random.choice(['Coalition','Korath','Hai'])
-        govts += govt[n]
-    nx.set_node_attributes(G, govts, 'govt')
+        govts.append( govt[n] )
+    nx.set_node_attributes(G, govt, 'govt')
     return G, govt
 
 
@@ -125,7 +125,7 @@ def project(p):
     return vec_add(vec_scalar_mul(u, ratio), vec_scalar_mul(p,400))
 
 pos = dict([(n,project(pos[n])) for n in pos])
-nx.set_node_attributes(G2, ['Pirate' for n in G2.nodes()], 'govt')
+nx.set_node_attributes(G2, dict([(n,'Pirate') for n in G2.nodes()]), 'govt')
 nx.set_node_attributes(G2, pos, 'pos')
 
 mapping = dict([(n,10000+n) for n in G2.nodes()])
@@ -141,6 +141,14 @@ def choose_closest(G, node_list, center=(0,0)):
 
 G2comps = nx.connected_components(G2)
 # connect them to each other
+closest_comp_nodes = [choose_closest(G2,c,center=(0,0)) for c in G2comps]
+
+pos = nx.get_node_attributes(G2, 'pos')
+dcomp_nodes = [(distance((0,0), pos[n]), n) for n in closest_comp_nodes]
+# print(dcomp_nodes)
+dcomp_nodes.sort()
+# dcomp_nodes.reverse()
+closest_comp_nodes = [x[1] for x in dcomp_nodes]
 
 def closest_pair(G, nodes1, nodes2):
     pos = nx.get_node_attributes(G, 'pos')
@@ -158,11 +166,11 @@ def argmin(l):
         if l[i] < m:
             mi = i
             m = l[i]
-    return i
+    return mi
 
 
 def connect_components(G):
-    comps = nx.connected_components(G)
+    comps = list(nx.connected_components(G))
     if len(comps) == 1:
         return
     comp1 = random.choice(comps)
@@ -171,23 +179,32 @@ def connect_components(G):
     dists = [distance(pos[x[0]],pos[x[1]]) for x in closests]
     closest = closests[argmin(dists)]
     G.add_edge(closest[0],closest[1])
-    return connected_components(G)
+    return connect_components(G)
 
 connect_components(G2)
 
 print(G2.nodes())
-graphit(G2)
+#graphit(G2)
+
+govts = nx.get_node_attributes(G2, 'govt')
+print(govts)
+
 
 G3, _ = generate_inital_graph(375)
-graphit(G3)
+#graphit(G3)
 G = nx.compose(G2,G3)
+
+
+
 #govts = nx.get_node_attributes(G, 'govt')
 
 # connect the 2 graphs
-for cnode in closest_comp_nodes:
+for cnode in closest_comp_nodes[0:2]:
     pos = nx.get_node_attributes(G, 'pos')
     p = pos[cnode]
     closest = choose_closest(G3, G3.nodes(), center=p)
     G.add_edge(cnode, closest)
-    
-graphit(G)
+
+govts = nx.get_node_attributes(G, 'govt')
+print(govts)
+graphit(G,govts)
