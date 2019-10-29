@@ -140,7 +140,40 @@ def choose_closest(G, node_list, center=(0,0)):
     return closest
 
 G2comps = nx.connected_components(G2)
-closest_comp_nodes = [choose_closest(G2,c,center=(0,0)) for c in G2comps]
+# connect them to each other
+
+def closest_pair(G, nodes1, nodes2):
+    pos = nx.get_node_attributes(G, 'pos')
+    pair = None
+    for n1 in nodes1:
+        for n2 in nodes2:
+            if pair is None or distance(pos[n1],pos[n2]) < distance(pos[pair[0]],pos[pair[1]]):
+                pair = (n1,n2)
+    return pair
+
+def argmin(l):
+    m  = l[0]
+    mi = 0
+    for i in range(1,len(l)):
+        if l[i] < m:
+            mi = i
+            m = l[i]
+    return i
+
+
+def connect_components(G):
+    comps = nx.connected_components(G)
+    if len(comps) == 1:
+        return
+    comp1 = random.choice(comps)
+    pos = nx.get_node_attributes(G, 'pos')
+    closests = [(n,choose_closest(G,[n for n in G.nodes() if not n in comp1],center=pos[n])) for n in comp1]
+    dists = [distance(pos[x[0]],pos[x[1]]) for x in closests]
+    closest = closests[argmin(dists)]
+    G.add_edge(closest[0],closest[1])
+    return connected_components(G)
+
+connect_components(G2)
 
 print(G2.nodes())
 graphit(G2)
