@@ -7,6 +7,7 @@ import networkx as nx
 import networkx
 import random
 import forceatlas2
+import numpy
 
 maps = es.parse_endless_sky_file("data.orig/map.txt.original")
 print(len(maps))
@@ -79,7 +80,7 @@ def graphit(G, govt=None):
                            node_size=80,
                            cmap=plt.cm.tab10_r)
     plt.axis('off')
-    #plt.savefig('pirate.maps.txt.out.png')
+    plt.savefig('pirate.maps.txt.out.png')
     plt.show()
 
 def distance(p1,p2):
@@ -122,12 +123,13 @@ ratio = 50
 
 def project(p):
     u = unit(p)
-    return vec_add(vec_scalar_mul(u, ratio), vec_scalar_mul(p,400))
+    return vec_add(vec_scalar_mul(u, ratio), vec_scalar_mul(p,200))
 
 pos = dict([(n,project(pos[n])) for n in pos])
 nx.set_node_attributes(G2, dict([(n,'Pirate') for n in G2.nodes()]), 'govt')
 nx.set_node_attributes(G2, pos, 'pos')
 
+# we have to relabel them so we can find them
 mapping = dict([(n,10000+n) for n in G2.nodes()])
 G2 = nx.relabel_nodes(G2, mapping)
 
@@ -181,9 +183,52 @@ def connect_components(G):
     G.add_edge(closest[0],closest[1])
     return connect_components(G)
 
-connect_components(G2)
 
-print(G2.nodes())
+# remove edges that intersect 0,0 R = 50
+
+def angle_between_points(p0,p1,p2):
+    v0 = numpy.array(p0) - numpy.array(p1)
+    v1 = numpy.array(p2) - numpy.array(p1)
+    angle = numpy.math.atan2(numpy.linalg.det([v0,v1]),numpy.dot(v0,v1))
+    return angle
+
+def ortho_projection(lp0,lp1,center):
+    p1 = lp1
+    p0 = lp0
+    p2 = center
+    #lp1 to center is u
+    #lp1 to lp0 is v
+    # proju is (u dot v / length v^2) times v
+    u = numpy.array(lp1) - numpy.array(center)
+    v = numpy.array(lp1) - numpy.array(lp0)
+    return u - (numpy.dot(u,v) / (numpy.linalg.norm(v))**2) * v
+    
+def line_intersect_circle(lp0,lp1,center,radius):
+    perp_vec = ortho_projection(lp0,lp1,center)
+    return numpy.linalg.norm( perp_vec ) < radius
+
+def remove_edges_intersecting_circle(G2):
+    edges = list(G2.edges())
+    pos = nx.get_node_attributes(G2, 'pos')
+    for edge in edges:
+        a, b = edge
+        lp0 = pos[a]
+        lp1 = pos[b]
+        center = (0,0)
+        radius = 55
+        if line_intersect_circle(lp0,lp1,center,radius):
+            print("Removing %s", (a,b))
+            G2.remove_edge(a,b)
+
+# clean up pirate space
+remove_extra_neighbors(G2)
+remove_edges_intersecting_circle(G2)
+# make sure it is connected
+connect_components(G2)
+# clean it up again
+remove_edges_intersecting_circle(G2)
+# make sure there's no stragglers
+connect_components(G2)
 #graphit(G2)
 
 govts = nx.get_node_attributes(G2, 'govt')
@@ -199,12 +244,14 @@ G = nx.compose(G2,G3)
 #govts = nx.get_node_attributes(G, 'govt')
 
 # connect the 2 graphs
-for cnode in closest_comp_nodes[0:2]:
+for cnode in closest_comp_nodes[0:4]:
     pos = nx.get_node_attributes(G, 'pos')
     p = pos[cnode]
     closest = choose_closest(G3, G3.nodes(), center=p)
     G.add_edge(cnode, closest)
 
 govts = nx.get_node_attributes(G, 'govt')
-print(govts)
+# print(govts)
 graphit(G,govts)
+
+# now for all nodes in G2
