@@ -118,12 +118,12 @@ for n in pos:
 
 #d = math.sqrt(60*60 + 60*60)
 #d2 = distance(vector,(0,0))
-ratio = 50
+ratio = 1500
 
 
-def project(p):
+def project(p,expand=700):
     u = unit(p)
-    return vec_add(vec_scalar_mul(u, ratio), vec_scalar_mul(p,200))
+    return vec_add(vec_scalar_mul(u, ratio), vec_scalar_mul(p,expand))
 
 pos = dict([(n,project(pos[n])) for n in pos])
 nx.set_node_attributes(G2, dict([(n,'Pirate') for n in G2.nodes()]), 'govt')
@@ -215,7 +215,7 @@ def remove_edges_intersecting_circle(G2):
         lp0 = pos[a]
         lp1 = pos[b]
         center = (0,0)
-        radius = 55
+        radius = 1400
         if line_intersect_circle(lp0,lp1,center,radius):
             print("Removing %s", (a,b))
             G2.remove_edge(a,b)
@@ -234,8 +234,33 @@ connect_components(G2)
 govts = nx.get_node_attributes(G2, 'govt')
 print(govts)
 
+def extract_original_graph(maps):
+    systems = es.endless_type_grep(maps, "system")
+    n_systems = len(systems)
+    system_names = [system[0][1] for system in systems]
+    system_names_to_system = dict(zip(system_names, systems))
+    governments = [es.endless_first(system, "government")[1] for system in systems]
+    system_names_to_governments = dict(zip(system_names, governments))
+    positions = {}
+    G = nx.Graph()
+    for system in systems:
+        name = system[0][1]
+        G.add_node(name)
+        position = es.endless_type_grep(system,'pos')[0][1:]
+        print(position)
+        positions[name] = position
+        links = es.endless_type_grep(system, 'link')
+        for link in links:
+            print(link[1])
+            G.add_edge(name, link[1])
+    print(positions)
+    nx.set_node_attributes(G, positions,'pos')
+    nx.set_node_attributes(G, system_names_to_governments, 'govt')
+    return G
 
-G3, _ = generate_inital_graph(375)
+# G3, _ = generate_inital_graph(375)
+
+G3 = extract_original_graph(maps)
 #graphit(G3)
 G = nx.compose(G2,G3)
 
@@ -244,7 +269,7 @@ G = nx.compose(G2,G3)
 #govts = nx.get_node_attributes(G, 'govt')
 
 # connect the 2 graphs
-for cnode in closest_comp_nodes[0:4]:
+for cnode in closest_comp_nodes[0:7]:
     pos = nx.get_node_attributes(G, 'pos')
     p = pos[cnode]
     closest = choose_closest(G3, G3.nodes(), center=p)
