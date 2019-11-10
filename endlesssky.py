@@ -1,5 +1,6 @@
 import re
 import larkendless as es
+import copy
 
 def es_name(obj):
     return obj[0][1]
@@ -65,6 +66,10 @@ class EndlessSky:
             if not self.is_planet_name(name)
                 return name
         raise Exception( "Couldn't name system: %s" % name )
+    def planets_of_system_object(self, system):                
+        objects = endless_recursive_type_grep( system, "object")
+        planets = [o for o in objects if not es_name(o) is None and if len(es_name(o)) > 0]
+        return planets
     def add_system_with_rename(self, system, sys_name_renamer=None, planet_name_renamer=None):
         if sys_name_renamer is None:
             sys_name_renamer = self._sys_name_renamer
