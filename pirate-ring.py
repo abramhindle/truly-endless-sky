@@ -272,8 +272,9 @@ for cnode in closest_comp_nodes[0:7]:
     closest = choose_closest(G3, G3.nodes(), center=p)
     G.add_edge(cnode, closest)
 
-G.add_edge(random.choice(list(G2.nodes())), 'Rutilicus')
-G.add_edge(random.choice(list(G2.nodes())), 'Rutilicus')
+# # Rutilicus Debugging
+# G.add_edge(random.choice(list(G2.nodes())), 'Rutilicus')
+# G.add_edge(random.choice(list(G2.nodes())), 'Rutilicus')
     
 # todo: add 1 link from pirates
     
