@@ -275,7 +275,10 @@ for cnode in closest_comp_nodes[0:7]:
 # # Rutilicus Debugging
 # G.add_edge(random.choice(list(G2.nodes())), 'Rutilicus')
 # G.add_edge(random.choice(list(G2.nodes())), 'Rutilicus')
-    
+G.add_edge(random.choice(list(G2.nodes())), 'Unagi')
+G.add_edge(random.choice(list(G2.nodes())), 'Unagi')
+
+
 # todo: add 1 link from pirates
     
 def populate_pirate_ring(pirate_graph,whole_graph, eso):
