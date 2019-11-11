@@ -38,6 +38,8 @@ class EndlessSky:
         return system_map
     def get_system_by_name(self, name):
         return self.system_map()[name]
+    def set_system_by_name(self, name):
+        return self.system_map()[name]
     def is_system_name(self,name):
         return name in self.system_names()
     def governments(self):
@@ -90,14 +92,15 @@ class EndlessSky:
             pname = planet_name_renamer( oname )
             if pname in already_used_the_name:
                 raise Exception("We already used the name %s" % pname)
-            # es_rename(planet, pname)
+            es_rename(planet, pname)
             # this changes top level planetes
             self.duplicate_and_rename_planet(fromname=oname, toname=pname)
         self.add_system( system )
-
+        return sys_name
+    
     def duplicate_and_rename_system(self, system_name,sys_name_renamer=None, planet_name_renamer=None):
         system = copy.deepcopy( self.get_system_by_name( system_name ) )
-        self.add_system_with_rename( system, sys_name_renamer, planet_name_renamer)
+        return self.add_system_with_rename( system, sys_name_renamer, planet_name_renamer)
     def is_planet_name(self,name):
         return name in self.planet_names()        
     def planet_names(self):
@@ -121,6 +124,26 @@ class EndlessSky:
     def write_to_disk(self, mapfile="maps.txt.out"):
         out = es.serialize_entities(self.maps)
         open(mapfile, 'w').write(out)
+    def get_system_position_by_name(self, system_name):
+        system = self.get_system_by_name( system_name )
+        return es.endless_type_grep(system,'pos')[0][1:]
+    def set_system_position_by_name(self, system_name, point):
+        system = self.get_system_by_name( system_name )
+        system = es.endless_replace( system, 'pos', point )
+    def get_system_links_by_name(self, system_name):
+        """ returns tuples of attributes """
+        system = self.get_system_by_name( system_name )
+        links = es.endless_type_grep(system, 'link')
+        return links
+    def update_system(self, system ):
+        es.endless_replace_entity( self.maps, system[0], system )
+    def remove_links_of_system_name( self, system_name ):
+        system = self.get_system_by_name( system_name )
+        system = es.endless_delete_type(system, 'link')
+        self.update_system( system )
+    def add_link_between_name(self, system1, system2):
+        system = self.get_system_by_name( system1 )
+        es.endless_add_property(system,('link', system2))
 
         
     

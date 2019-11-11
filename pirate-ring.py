@@ -8,11 +8,12 @@ import networkx
 import random
 import forceatlas2
 import numpy
+import copy
+import endlesssky
 
-maps = es.parse_endless_sky_file("data.orig/map.txt.original")
-print(len(maps))
-systems = es.endless_type_grep(maps, "system")
-n_systems = len(systems)
+eso = endlesssky.EndlessSky()
+eso.load_object_file()
+n_systems = eso.n_systems()
 
 minx = -1000
 maxx = 1000
@@ -234,39 +235,35 @@ connect_components(G2)
 govts = nx.get_node_attributes(G2, 'govt')
 print(govts)
 
-def extract_original_graph(maps):
-    systems = es.endless_type_grep(maps, "system")
-    n_systems = len(systems)
-    system_names = [system[0][1] for system in systems]
-    system_names_to_system = dict(zip(system_names, systems))
-    governments = [es.endless_first(system, "government")[1] for system in systems]
-    system_names_to_governments = dict(zip(system_names, governments))
+def extract_original_graph(eso):
+    systems = eso.systems()
+    n_systems = eso.n_systems()
+    system_names = eso.system_names()
+    system_names_to_system = eso.system_map()
+    system_names_to_governments = eso.system_names_to_governments()
     positions = {}
     G = nx.Graph()
-    for system in systems:
-        name = system[0][1]
+    for name in system_names:
         G.add_node(name)
-        position = es.endless_type_grep(system,'pos')[0][1:]
-        print(position)
+        position = eso.get_system_position_by_name( name )
         positions[name] = position
-        links = es.endless_type_grep(system, 'link')
+        links = eso.get_system_links_by_name( name )
         for link in links:
-            print(link[1])
             G.add_edge(name, link[1])
-    print(positions)
     nx.set_node_attributes(G, positions,'pos')
     nx.set_node_attributes(G, system_names_to_governments, 'govt')
     return G
 
 # G3, _ = generate_inital_graph(375)
 
-G3 = extract_original_graph(maps)
+G3 = extract_original_graph(eso)
 #graphit(G3)
+
+
 G = nx.compose(G2,G3)
 
 
-
-#govts = nx.get_node_attributes(G, 'govt')
+govts = nx.get_node_attributes(G, 'govt')
 
 # connect the 2 graphs
 for cnode in closest_comp_nodes[0:7]:
@@ -275,8 +272,45 @@ for cnode in closest_comp_nodes[0:7]:
     closest = choose_closest(G3, G3.nodes(), center=p)
     G.add_edge(cnode, closest)
 
-govts = nx.get_node_attributes(G, 'govt')
-# print(govts)
-graphit(G,govts)
+G.add_edge(random.choice(list(G2.nodes())), 'Rutilicus')
+G.add_edge(random.choice(list(G2.nodes())), 'Rutilicus')
+    
+# todo: add 1 link from pirates
+    
+def populate_pirate_ring(pirate_graph,whole_graph, eso):
+    G2 = pirate_graph
+    G = whole_graph
+    system_names_to_governments = eso.system_names_to_governments()
+    pirates = [x for x in system_names_to_governments.keys() if system_names_to_governments[x] == 'Pirate']
+    rename = {}
+    pos = nx.get_node_attributes(G2, 'pos')
+    for node in G2.nodes():
+        clone_system_name = random.choice(pirates)
+        pirate_name = eso.duplicate_and_rename_system( clone_system_name )      
+        eso.set_system_position_by_name( pirate_name, pos[node] )
+        rename[node] = pirate_name
+    G2 = nx.relabel_nodes(G2, rename)
+    G = nx.relabel_nodes(G, rename)
+    return (G2,G)
+    
+G2,G = populate_pirate_ring(G2, G, eso)
 
-# now for all nodes in G2
+def sync_links(G, eso):
+    """ We trust the links in G, not in eso """
+    for node in G.nodes():
+        # remove all the links
+        # add the links from G
+        print(node)
+        eso.remove_links_of_system_name( node )
+        for neighbor in G.neighbors(node):
+            print("\t%s" % neighbor)
+            eso.add_link_between_name( node , neighbor )
+
+sync_links(G,eso)
+
+print(G.nodes())
+# print(govts)
+
+eso.write_to_disk()
+govts = nx.get_node_attributes(G, 'govt')
+graphit(G,govts)
