@@ -10,7 +10,7 @@ I wanted to make endless sky a procedural game without changing the game engine 
 
 Unless otherwise specified:
 
-GPL3 (c) 2019 Abram Hindle & Endless Sky Developers
+GPL3 (c) 2019 Abram Hindle & Michael Zahniser & Endless Sky Developers
 
 # Requirements:
 
