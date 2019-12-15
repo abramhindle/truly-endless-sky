@@ -130,5 +130,12 @@ dmypy.json
 
 data.orig/*.txt
 
-# emacs
+# emacs and vim
 *~
+*.swp
+
+# local files
+maps.txt.out*
+pirate.maps.txt.out.png
+
+
