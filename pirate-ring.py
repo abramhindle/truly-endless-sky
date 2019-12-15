@@ -1,4 +1,3 @@
-import larkendless as es
 import random
 import math
 import math
@@ -9,7 +8,7 @@ import random
 import forceatlas2
 import numpy
 import copy
-import endlesssky
+import trulyendlesssky as endlesssky
 
 eso = endlesssky.EndlessSky()
 eso.load_object_file()
