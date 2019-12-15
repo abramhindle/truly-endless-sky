@@ -28,7 +28,7 @@ GPL3 (c) 2019 Abram Hindle & Michael Zahniser & Endless Sky Developers
 # Installation
 
 ```
-pip3 install --user git+https://github.com/abramhindle/truly-endless-sky.git@more-priate
+pip3 install --user git+https://github.com/abramhindle/truly-endless-sky.git@master
 ```
 
 # Requirements:
