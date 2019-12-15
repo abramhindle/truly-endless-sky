@@ -4,9 +4,20 @@ Truly Endless Sky, helpers to aide in procedural generation of game content for 
 
 The class `trulyendlesssky.EndlessSky` can parse Endless Sky data files like maps.txt and produce a list based output. The class can also maintain state and modify the map data.
 
+## Uses
+
+* Parse endless sky data files
+* Regenerate endless sky data files
+* Move and manipulate star systems in Endless sky
+* Aide in procedural generation of Endless sky content
+* Make new maps
+
 # Motivation
 
-I wanted to make endless sky a procedural game without changing the game engine itself. The challenge was manipulating the strange data format they use where they rely on tab based hierarchical trees.
+When I first got Endless Sky I thought the "Endless" part implied procedural generation. I learned later after hours of gameplay that the world was itself quite fixed and not as dynamic as I had hoped. It is very well detailed and very well crafted.
+
+Thus I wanted to use procedural generation with Endless Sky. I wanted to make endless sky a procedural game without changing the game engine itself. The challenge was manipulating the strange data format they use where they rely on tab based hierarchical trees. After hacking a hand parser together I found it insufficient to fully parse the files so I switched to a general purpose LALR parser instead. That worked fine after I added some indent and dedent tokens.
+
 
 # License
 
@@ -97,3 +108,35 @@ G = extract_original_graph(eso)
 govts = nx.get_node_attributes(G, 'govt')
 graphit(G, govt=govts)
 ```
+
+# Examples
+
+Note these will corrupt your save files. Make backups!
+
+## pirate-ring.py -- The Pirate Ring
+
+This uses the high-level API.
+
+Pirate Ring is my imaginary endless sky world where the base game stays the same but the pirates have found a larger area to inhabit in the outer rim. The outer rim has very long distances and fully inhabited by the impoverished pirates.
+
+This builds a ring of systems around the current map, with a few connections connecting back. The systems in the ring are all pirate systems. We clone existing pirate systems within the ring.
+
+Connectivity is checked and guaranteed.
+
+## graph-map.py -- Graph Map
+
+This uses the more lowlevel API.
+
+Using graph layout algorithms rearrange the graph of systems into a new dangerous maps. Very unsafe for new players, but good for loading up an old save with a powerful fleet and be ready for a surprise.
+
+This Graph Map was a lazy attempt at getting a useful map demo out of endless sky. It is vibrant and difficult and too random. Works well on existing save files.
+
+Connectivity is guaranteed.
+
+## gridmap.py -- Grid Map
+
+This uses the more lowlevel API.
+
+This was a first attempt at rewriting the maps.txt. It places everything into a random grid. It is quite random and not as fun as graph Map.
+
+Essentially the systems are shuffled, their links are removed, and then they are placed into a grid and their links to their neighbors are replaced.
