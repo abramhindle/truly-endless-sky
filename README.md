@@ -140,3 +140,10 @@ This uses the more lowlevel API.
 This was a first attempt at rewriting the maps.txt. It places everything into a random grid. It is quite random and not as fun as graph Map.
 
 Essentially the systems are shuffled, their links are removed, and then they are placed into a grid and their links to their neighbors are replaced.
+
+
+# TODOs
+
+* Try to make sure comments are maintained ? Don't lose copyright notices.
+* Python docstrings https://realpython.com/documenting-python-code/
+* Re-architect with objects for manipulation
