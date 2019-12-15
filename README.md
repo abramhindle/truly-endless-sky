@@ -19,4 +19,4 @@ GPL3 (c) 2019 Abram Hindle & Endless Sky Developers
 * forceatlas2
 * networkx
 * matplotlib
-* lark
+* lark-parser

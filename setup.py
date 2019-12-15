@@ -11,11 +11,11 @@ setup(
   download_url = 'https://github.com/abramhindle/truly-endless-sky/archive/v_01.tar.gz',    # I explain this later on
   keywords = ['endlesssky', 'procedural generation', 'endless sky'],   # Keywords that define your package best
   install_requires=[            # I get to this in a second
-          'scipy',
-          'forceatlas2',
-          'networkx',
-          'matplotlib',
-          'lark'
+          'scipy>=1.3.3',
+          'forceatlas2>=1,<2',
+          'networkx>=2.4',
+          'matplotlib>=3.1.2',
+          'lark-parser>=0.7.8'
       ],
   classifiers=[
     'Development Status :: 3 - Alpha',      # Chose either "3 - Alpha", "4 - Beta" or "5 - Production/Stable" as the current state of your package
