@@ -1,8 +1,9 @@
 from distutils.core import setup
+exec(open('trulyendlesssky/version.py').read())
 setup(
   name = 'trulyendlesssky',         # How you named your package folder (MyLib)
   packages = ['trulyendlesssky'],   # Chose the same as "name"
-  version = '0.1',      # Start with a small number and increase it with every change you make
+  version=__version__, # this is dynamic!
   license='GPL3',        # Chose a license from here: https://help.github.com/articles/licensing-a-repository
   description = 'Truly Endless Sky, helpers to aide in procedural generation of game content for the game "Endless Sky"',   # Give a short description about your library
   author = 'Abram Hindle',                   # Type in your name

@@ -40,6 +40,8 @@ pip3 install --user git+https://github.com/abramhindle/truly-endless-sky.git@mas
 * matplotlib
 * lark-parser
 
+* Endless Sky https://github.com/endless-sky/endless-sky/releases/tag/v0.9.10
+
 # Usage
 
 Draw a graph of the system locations in space.
