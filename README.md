@@ -1,8 +1,10 @@
 # Truly Endless Sky
  
-Truly Endless Sky, helpers to aide in procedural generation of game content for the game "Endless Sky".
+Truly Endless Sky, helpers to aide in procedural generation of game content for the game "Endless Sky". Essentially this provides utilities for generating endless sky map data.
 
 The class `trulyendlesssky.EndlessSky` can parse Endless Sky data files like maps.txt and produce a list based output. The class can also maintain state and modify the map data.
+
+Endless Sky is an awesome game by Michael Zahniser et al. You can get it from here: https://github.com/endless-sky/endless-sky/releases/tag/v0.9.10
 
 ## Uses
 
