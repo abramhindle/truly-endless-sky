@@ -127,6 +127,13 @@ This builds a ring of systems around the current map, with a few connections con
 
 Connectivity is checked and guaranteed.
 
+## ring.py -- The Pirate Ring improved with an alternative layout
+
+This uses the high-level API.
+
+This is the old pirate ring but the hops are lot shorter and more
+manageable. This was mostly exploring alternative methods of layout.
+
 ## graph-map.py -- Graph Map
 
 This uses the more lowlevel API.
