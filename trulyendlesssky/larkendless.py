@@ -1,3 +1,24 @@
+#    Copyright (c) 2019 Abram Hindle, Michael Zahniser, Endless Sky Developers
+#
+#    This program is free software: you can redistribute it and/or modify
+#    it under the terms of the GNU General Public License as published by
+#    the Free Software Foundation, either version 3 of the License, or
+#    (at your option) any later version.
+#
+#    This program is distributed in the hope that it will be useful,
+#    but WITHOUT ANY WARRANTY; without even the implied warranty of
+#    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#    GNU General Public License for more details.
+#
+#    You should have received a copy of the GNU General Public License
+#    along with this program.  If not, see <https://www.gnu.org/licenses/>.
+"""EndlessSky parser
+
+These are more low level routines for manipulating endless sky data.
+They are very close to the data format.
+
+"""
+
 import sys
 
 from lark import Lark, Transformer, v_args
@@ -27,8 +48,10 @@ endless_grammar = r"""
     %ignore COMMENT
 """
 
-
 class TreeToEndless(Transformer):
+    """Helper to convert Lark output into Endless Sky list/tuples
+    """
+    
     def string(self, s):
         (s,) = s
         return s[1:-1]
@@ -55,10 +78,16 @@ class TreeToEndless(Transformer):
         return o
     def start(self, s):
         return list(s)
-    
+
+
 endless_parser = Lark(endless_grammar, parser='lalr', lexer='standard')
+"""endless_parser is the parser that parses endless sky data
+"""
 
 def count_init_tabs(s):
+    """count the beginning tabs
+    """
+    
     count = 0
     for c in s:
         if c != '\t':
@@ -68,6 +97,9 @@ def count_init_tabs(s):
     return count
 
 def add_indent_dedent( text ):
+    """adds indent and dedent tokens to a string
+    """
+    
     c = 0
     out = []
     for line in text.split("\n"):
@@ -89,28 +121,45 @@ def add_indent_dedent( text ):
     return "".join( out )
 
 def parser( text ):
+    """parse endless sky data text to tuple/lists
+    """
+    
     annotated_text = add_indent_dedent( text )
     tree = endless_parser.parse( annotated_text )
     transformed = TreeToEndless().transform( tree )
     return transformed
 
 def get_name(x):
+    """give an endless sky tuple return the name
+    """
+    
     if isinstance(x,list):
         return x[0][0]
     else:
         return x[0]
 
 def get_value(x):
+    """give an endless sky tuple return the value
+    """
+
     if isinstance(x,list):
         return x[0][1]
     else:
         return x[1]
 def get_properties(x):
+    """give an endless sky object return the properties of it
+    """
+
     if isinstance(x,list):
         return x[1:]
     return None
 
 def mk_val(entity, val):
+    """given an entity tuple and a value make a modify or make a new tuple
+
+    tuples are immutable so there is some complication here
+    """
+    
     if isinstance(entity,list):
         entity[0][1] = val
         return entity
@@ -120,22 +169,39 @@ def mk_val(entity, val):
         return (entity[0], val)
     
 def endless_type_grep(entities, stype):
+    """given an endless sky list grep out objects of a type (like system or planet)
+    """
+    
     return [x for x in entities if get_name(x) == stype]
 
 def flatten(l_o_l):
+    """flatten a list of lists once
+    """
+    
     return [item for sublist in l_o_l for item in sublist]
 
 def endless_recursive_type_grep(entities, stype):
+    """recursive grep for endless type objects -- get sub objects too!
+    """
+    
     return flatten([endless_recursive_type_grep(x,stype) for x in entities if isinstance(x,list)]) + [x for x in entities if get_name(x) == stype]
 
 def endless_name_grep(entities, name):
+    """grep endless sky for named objects
+    """
+    
     return [x for x in entities if get_value(x) == name]
 
 def endless_has(entity, entry):
+    """does an endless sky object have a properties or entry 
+    """
+    
     return len(endless_type_grep(entity, entry)) > 0
 
 def endless_replace(entity, prop, val):
-    """ mutates! """
+    """given entity with first property prop replace its value with val! mutates! 
+    """
+    
     for i in range(0,len(entity)):
         if get_name(entity[i]) == prop:
             entity[i] = mk_val(entity[i], val)
@@ -143,12 +209,21 @@ def endless_replace(entity, prop, val):
     return entity
 
 def endless_delete_type(entity, prop):
+    """makes a new endless sky object without all properties of type prop
+    """
+    
     return [x for x in entity if x[0] != prop]
     
 def endless_first(entity, stype):
+    """returns the first property to make type
+    """
+    
     return endless_type_grep(entity, stype)[0]
 
 def endless_replace_entity(entities, entity_tuple, replacement_entity):
+    """given entities replace entity_tuple with replacement_entity
+    """
+    
     for i in range(0, len(entities)):
         entity = entities[i]
         if isinstance(entity, list):
@@ -158,10 +233,16 @@ def endless_replace_entity(entities, entity_tuple, replacement_entity):
     raise Exception("Could not find %s" % entity_tuple)
 
 def endless_add_property(entity, t):
+    """given an entity add a property tuple t
+    """
+    
     entity.append(t)
     return entity
 
 def layout_value(val):
+    """Convert an endless sky value to text
+    """
+    
     if val is None:
         return ''
     if isinstance(val,str):
@@ -178,6 +259,9 @@ def layout_value(val):
             
 
 def layout_property(entity):
+    """convert an endless sky property to text
+    """
+    
     if len(entity) == 1 or entity[1] is None:
         return layout_value(entity[0])
     else:
@@ -190,11 +274,13 @@ def layout_property(entity):
 
             
 def indent(lines):
+    """indent the lines by 1 tab
+    """
     return ["\t" + line for line in lines]
 
 
 def layout_entities(entities):
-    ''' only returns lists of strings '''
+    '''given an endless sky entity list convert it to a list of strings'''
     if isinstance(entities, list):
         if len(entities) > 0 and isinstance(entities[0],list):
             assert "Inner List?"
@@ -203,11 +289,16 @@ def layout_entities(entities):
         return [ layout_property(entities) ]
 
 def serialize_entities(entities):
+    """convert a list of endless sky objects to a string
+    """
+    
     if (isinstance(entities, list) and len(entities) > 0 and isinstance(entities[0],list)):
         return "\n".join(["\n".join(layout_entities(entity)) for entity in entities])
     return "\n".join(layout_entities(entities))
 
 def parse_endless_sky_file( filename ):
+    """parse an endless sky file via the filename
+    """
     return parser( open( filename ).read() )
 
 
@@ -285,6 +376,9 @@ mission "Intro [0]"
 '''
 
 def test_driver():
+    """This is the test suite
+    """
+    
     testd = "# yo how's it going\n\n" \
             "object\n__INDENT__" \
             "\tsprite star/g5\n" \
