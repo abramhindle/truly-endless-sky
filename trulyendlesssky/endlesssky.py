@@ -162,12 +162,30 @@ class EndlessSky:
                 return newname
         raise Exception( "Couldn't name system: %s" % name )
     
-    def planets_of_system_object(self, system):                
+    def planets_of_system_object(self, system):
+        """given a system (not a system name), return all of its planets
+        """
+
         objects = es.endless_recursive_type_grep( system, "object")
         objects = [o for o in objects if not isinstance(o,tuple)] # danger hack
         planets = [o for o in objects if not es_name(o) is None and len(es_name(o)) > 0]
         return planets
     def add_system_with_rename(self, system, sys_name_renamer=None, planet_name_renamer=None):
+        """add a system and rename it
+
+        Parameters
+        ----------
+        system : es tuple/list
+            the system in question in list/tuple form
+        sys_name_renamer : function str -> str
+            given a string for name, modify it to avoid duplicates for system names
+            if it is missing a default enumeration strategy will be used
+        planet_name_renamer : function str -> str
+            given a string for name, modify it to avoid duplicates for system names
+            if it is missing a default enumeration strategy will be used
+
+        """
+        
         if sys_name_renamer is None:
             sys_name_renamer = self._sys_name_renamer
         if planet_name_renamer is None:
@@ -187,49 +205,102 @@ class EndlessSky:
         return sys_name
     
     def duplicate_and_rename_system(self, system_name,sys_name_renamer=None, planet_name_renamer=None):
+        """copy a system by name and rename it
+
+        Parameters
+        ----------
+        system_name : str
+            the system name to duplicate
+        sys_name_renamer : function str -> str
+            given a string for name, modify it to avoid duplicates for system names
+            if it is missing a default enumeration strategy will be used
+        planet_name_renamer : function str -> str
+            given a string for name, modify it to avoid duplicates for system names
+            if it is missing a default enumeration strategy will be used
+
+        """
+
         system = copy.deepcopy( self.get_system_by_name( system_name ) )
         return self.add_system_with_rename( system, sys_name_renamer, planet_name_renamer)
     def is_planet_name(self,name):
+        """returns if a planet name exist
+        """
+        
         return name in self.planet_names()        
     def planet_names(self):
+        """returns all the planet names
+        """
+        
         planets = self.planets()
         planet_names = [planet[0][1] for planet in planets]
         self._planet_names = planet_names
         return planet_names                
     def planet_map(self):
+        """return a mapping from planet to endless sky planet object
+        """
+        
         planets = self.planets()
         planet_map= dict([(planet[0][1],planet)  for planet in planets])
         return planet_map
     def get_planet_by_name(self, name):
+        """given a planet name return the endless sky planet object
+        """
+        
         return self.planet_map()[name]
     def duplicate_and_rename_planet(self, fromname=None, toname=None ):
+        """copy a planet and rename it
+        """
+        
         planet = self.get_planet_by_name( fromname )
         planet = copy.deepcopy( planet )
         es_rename( planet, toname )
         self.add_planet( planet )
     def add_planet( self, planet ):
+        """add a new ES planet
+        """
+        
         self.maps.append( planet )
     def write_to_disk(self, mapfile="maps.txt.out"):
+        """write the current map to disk (accepts a filename)
+        """
+        
         out = es.serialize_entities(self.maps)
         open(mapfile, 'w').write(out)
     def get_system_position_by_name(self, system_name):
+        """get the position tuple of a system
+        """
+        
         system = self.get_system_by_name( system_name )
         return es.endless_type_grep(system,'pos')[0][1:]
     def set_system_position_by_name(self, system_name, point):
+        """set a system's position using the system name and tuple for position
+        """
+        
         system = self.get_system_by_name( system_name )
         system = es.endless_replace( system, 'pos', point )
     def get_system_links_by_name(self, system_name):
-        """ returns tuples of attributes """
+        """given a system_name return its link tuples. returns tuples of attributes.
+        """
+        
         system = self.get_system_by_name( system_name )
         links = es.endless_type_grep(system, 'link')
         return links
     def update_system(self, system ):
+        """replace the system in the map with current system -- name must be the same
+        """
+        
         es.endless_replace_entity( self.maps, system[0], system )
     def remove_links_of_system_name( self, system_name ):
+        """remove the links of system by name
+        """
+        
         system = self.get_system_by_name( system_name )
         system = es.endless_delete_type(system, 'link')
         self.update_system( system )
     def add_link_between_name(self, system1, system2):
+        """add a unidirectional link between system1 and system2 
+        """
+        
         system = self.get_system_by_name( system1 )
         es.endless_add_property(system,('link', system2))
 
