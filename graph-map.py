@@ -1,3 +1,28 @@
+#    Copyright (c) 2019 Abram Hindle, Michael Zahniser, Endless Sky Developers
+#
+#    This program is free software: you can redistribute it and/or modify
+#    it under the terms of the GNU General Public License as published by
+#    the Free Software Foundation, either version 3 of the License, or
+#    (at your option) any later version.
+#
+#    This program is distributed in the hope that it will be useful,
+#    but WITHOUT ANY WARRANTY; without even the implied warranty of
+#    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#    GNU General Public License for more details.
+#
+#    You should have received a copy of the GNU General Public License
+#    along with this program.  If not, see <https://www.gnu.org/licenses/>.
+"""graph-map.py -- Graph Map
+
+This uses the more lowlevel API.
+
+Using graph layout algorithms rearrange the graph of systems into a new dangerous maps. Very unsafe for new players, but good for loading up an old save with a powerful fleet and be ready for a surprise.
+
+This Graph Map was a lazy attempt at getting a useful map demo out of endless sky. It is vibrant and difficult and too random. Works well on existing save files.
+
+Connectivity is guaranteed.
+"""
+
 import trulyendlesssky.larkendless as es
 import random
 import math

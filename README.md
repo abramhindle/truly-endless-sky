@@ -146,12 +146,6 @@ This was a first attempt at rewriting the maps.txt. It places everything into a 
 Essentially the systems are shuffled, their links are removed, and then they are placed into a grid and their links to their neighbors are replaced.
 
 
-# TODOs
-
-* Try to make sure comments are maintained ? Don't lose copyright notices.
-* Python docstrings https://realpython.com/documenting-python-code/
-* Re-architect with objects for manipulation
-
 # Tests
 
 The mains of the library will run the tests for that module.
@@ -161,3 +155,8 @@ python3 -m trulyendlesssky.endlesssky
 python3 -m trulyendlesssky.larkendless
 ```
 
+# TODOs
+
+* Try to make sure comments are maintained ? Don't lose copyright notices.
+* [X] Python docstrings https://realpython.com/documenting-python-code/
+* Re-architect with objects for manipulation

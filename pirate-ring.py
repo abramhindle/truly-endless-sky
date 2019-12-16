@@ -1,3 +1,28 @@
+#    Copyright (c) 2019 Abram Hindle, Michael Zahniser, Endless Sky Developers
+#
+#    This program is free software: you can redistribute it and/or modify
+#    it under the terms of the GNU General Public License as published by
+#    the Free Software Foundation, either version 3 of the License, or
+#    (at your option) any later version.
+#
+#    This program is distributed in the hope that it will be useful,
+#    but WITHOUT ANY WARRANTY; without even the implied warranty of
+#    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#    GNU General Public License for more details.
+#
+#    You should have received a copy of the GNU General Public License
+#    along with this program.  If not, see <https://www.gnu.org/licenses/>.
+"""pirate-ring.py -- The Pirate Ring
+
+This uses the high-level API.
+
+Pirate Ring is my imaginary endless sky world where the base game stays the same but the pirates have found a larger area to inhabit in the outer rim. The outer rim has very long distances and fully inhabited by the impoverished pirates.
+
+This builds a ring of systems around the current map, with a few connections connecting back. The systems in the ring are all pirate systems. We clone existing pirate systems within the ring.
+
+Connectivity is checked and guaranteed.
+"""
+
 import random
 import math
 import math

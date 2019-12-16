@@ -1,3 +1,26 @@
+#    Copyright (c) 2019 Abram Hindle, Michael Zahniser, Endless Sky Developers
+#
+#    This program is free software: you can redistribute it and/or modify
+#    it under the terms of the GNU General Public License as published by
+#    the Free Software Foundation, either version 3 of the License, or
+#    (at your option) any later version.
+#
+#    This program is distributed in the hope that it will be useful,
+#    but WITHOUT ANY WARRANTY; without even the implied warranty of
+#    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#    GNU General Public License for more details.
+#
+#    You should have received a copy of the GNU General Public License
+#    along with this program.  If not, see <https://www.gnu.org/licenses/>.
+"""gridmap.py -- Grid Map
+
+This uses the more lowlevel API.
+
+This was a first attempt at rewriting the maps.txt. It places everything into a random grid. It is quite random and not as fun as graph Map.
+
+Essentially the systems are shuffled, their links are removed, and then they are placed into a grid and their links to their neighbors are replaced.
+"""
+
 import trulyendlesssky.larkendless as es
 import random
 import math
