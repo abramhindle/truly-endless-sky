@@ -3,9 +3,38 @@ import trulyendlesssky.larkendless as es
 import copy
 
 def es_name(obj):
+    """Gets the name of a local es object
+    
+    Parameters
+    ----------
+    obj: tuple or list
+        the object who has a name
+
+    Returns
+    -------
+    str
+        a name of the object    
+    """
+    
     return obj[0][1]
 
 def es_rename(obj,name):
+    """renames an object (mutation)    
+    
+    Parameters
+    ----------
+    obj : tuple or list
+        the object who has a name
+
+    name : str
+        the name to rename the object to
+
+    Returns
+    -------
+    str
+        a name of the object    
+    """
+    
     if isinstance(obj[0],tuple):
         obj[0] = (obj[0][0], name)
     elif isinstance(obj[0], list):
@@ -15,65 +44,124 @@ def es_rename(obj,name):
     return obj
 
 class EndlessSky:
+    """A class used to represent the EndlessSky game and maintain state for modifications
+    """
+    
     def __init__(self):
         None
     def load_object_file(self, filename="data.orig/map.txt.original"):
+        """loads the map.txt into the local EndlessSky object
+        
+        Parameters
+        ----------
+        filename : str
+            the string of the filename to load endless sky data from        
+        """
+        
         self.maps = es.parse_endless_sky_file( filename )
     def load_maps( self, maps ):
+        """ assign the parameter maps to the attribute maps.
+        
+        Parameters
+        ----------
+        maps : list (endless sky tuple/list tree)            
+        """
+    
         self.maps = maps
     def systems(self):
+        """return a list of the systems from the endless sky document
+        
+        Returns
+        -------
+        list
+            a list of all the system objects in the loaded document
+        """
+        
         systems = es.endless_type_grep(self.maps, "system")
         self._systems = systems
         return systems    
     def n_systems(self):
+        """return the number of systems
+        """
+
         return len(self.systems())
     def system_names(self):
+        """return the system names
+        """
+        
         systems = self.systems()
         system_names = [system[0][1] for system in systems]
         self._system_names = system_names
         return system_names    
     def system_map(self):
+        """return a mapping from system name to systems
+        """
+        
         systems = self.systems()
         system_map= dict([(system[0][1],system)  for system in systems])
         return system_map
     def get_system_by_name(self, name):
-        return self.system_map()[name]
-    def set_system_by_name(self, name):
+        """return a system based on its name
+        """
+        
         return self.system_map()[name]
     def is_system_name(self,name):
+        """returns if name is a system's name
+        """
+        
         return name in self.system_names()
     def governments(self):
+        """returns a list of systems and governments
+        """
+        
         systems = self.systems()
         governments = [es.endless_first(system, "government")[1] for system in systems]
         self._governments = governments
         return governments
     def system_names_to_governments(self):
+        """return a dict mapping system names to govts
+        """
+        
         governments = self.governments()
         system_names = self.system_names()
         system_names_to_governments = dict(zip(system_names, governments))
         self._system_names_to_governments = system_names_to_governments
         return system_names_to_governments
     def government_of_system_name(self, name):
+        """returns the government of a system by name
+        """
+        
         return self.system_names_to_governments()[name]
     def planets(self):
+        """returns all the planets in the endless sky document
+        """
+        
         planets = es.endless_type_grep(self.maps, "planet")
         return planets
     def add_system(self, system):
+        """add a system to the map (mutation)
+        """
+        
         self.maps.append(system)
     def _sys_name_renamer(self, name):
-        """ generate a name for the system """
+        """generate a name for the system
+        """
+        
         for i in range(1,1000):
             newname = name + " " + str(i)
             if not self.is_system_name(newname):
                 return newname
         raise Exception( "Couldn't name system: %s" % name )
     def _planet_name_renamer(self, name):
-        """ generate a name for the system """
+        """generate a name for the planet 
+        """
+        
         for i in range(1,1000):
             newname = name + " " + str(i)
             if not self.is_planet_name(newname):
                 return newname
         raise Exception( "Couldn't name system: %s" % name )
+    
     def planets_of_system_object(self, system):                
         objects = es.endless_recursive_type_grep( system, "object")
         objects = [o for o in objects if not isinstance(o,tuple)] # danger hack
