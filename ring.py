@@ -1,4 +1,4 @@
-import larkendless as es
+import trulyendlesssky.larkendless as es
 import random
 import math
 import math
@@ -9,7 +9,7 @@ import random
 import forceatlas2
 import numpy
 import copy
-import endlesssky
+import trulyendlesssky.endlesssky as endlesssky
 import scipy.spatial.distance
 
 eso = endlesssky.EndlessSky()
