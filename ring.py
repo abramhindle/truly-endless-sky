@@ -343,7 +343,7 @@ def populate_pirate_ring(pirate_graph,whole_graph, eso):
     for node in G2.nodes():
         clone_system_name = random.choice(pirates)
         pirate_name = eso.duplicate_and_rename_system( clone_system_name )      
-        eso.set_system_position_by_name( pirate_name, pos[node] )
+        eso.set_system_position_by_name( pirate_name, tuple(pos[node]) )
         rename[node] = pirate_name
     G2 = nx.relabel_nodes(G2, rename)
     G = nx.relabel_nodes(G, rename)
